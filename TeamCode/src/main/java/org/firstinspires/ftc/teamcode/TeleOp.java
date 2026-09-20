@@ -22,7 +22,7 @@ public class TeleOp extends OpMode {
 
     @Override
     public void init() {
-        TestCatapult = hardwareMap.get(DcMotor.class, "left_front_drive");
+        TestCatapult = hardwareMap.get(DcMotor.class, "catapult");
     }
 
     @Override
