@@ -30,15 +30,16 @@ public class TeleOp extends LinearOpMode {
         leftFlywheel = hardwareMap.get(DcMotor.class, "leftFlywheel");
         rightFlywheel = hardwareMap.get(DcMotor.class, "rightFlywheel");
 
-        frontRight.setDirection(DcMotor.Direction.REVERSE);
-        backRight.setDirection(DcMotor.Direction.REVERSE);
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        Intake.setDirection(DcMotor.Direction.REVERSE);
 
         waitForStart();
 
         while (opModeIsActive()) {
 
-            leftPower = -gamepad1.left_stick_y;
-            rightPower = -gamepad1.right_stick_y;
+            leftPower = -gamepad1.left_stick_y/1.2;
+            rightPower = -gamepad1.right_stick_y/1.2;
 
             frontLeft.setPower(leftPower);
             frontRight.setPower(rightPower);
@@ -53,14 +54,17 @@ public class TeleOp extends LinearOpMode {
 
             if(gamepad1.right_trigger == 1.0){
                 Transfer.setPower(1.0);
-            }else if(gamepad1.right_trigger >= 0.5){
+            }else if(gamepad1.right_trigger != 1.0) {
+                Transfer.setPower(0.0);
+            }
+
+
+            if(gamepad1.right_trigger >= 0.5) {
                 rightFlywheel.setPower(1.0);
                 leftFlywheel.setPower(-1.0);
-            }else if(gamepad1.right_trigger != 1.0){
-                Transfer.setPower(0.0);
             }else{
                 rightFlywheel.setPower(0.0);
-                leftFlywheel.setPower(1.0);
+                leftFlywheel.setPower(0.0);
             }
         }
     }
