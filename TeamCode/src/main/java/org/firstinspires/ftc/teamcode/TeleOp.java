@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.CRServo;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
 public class TeleOp extends LinearOpMode {
@@ -12,13 +13,14 @@ public class TeleOp extends LinearOpMode {
     private DcMotor frontRight = null;
     private DcMotor backLeft = null;
     private DcMotor backRight = null;
-    private DcMotor Intake = null;
     private DcMotor Transfer = null;
     private DcMotor leftCatapult = null;
     private DcMotor rightCatapult = null;
     private Servo upperKicker = null;
     private Servo lowerKicker = null;
     private ElapsedTime timer = new ElapsedTime();
+    private CRServo Intake = null;
+    //private Servo pollenClaw = null;
 
     // Tune these values for your specific robot mechanism
     private double p = 0.01;
@@ -27,6 +29,9 @@ public class TeleOp extends LinearOpMode {
 
     private double integralSum = 0;
     private double lastError = 0;
+
+    private boolean intakeOn = false;
+    private boolean transferOn = false;
 
     public void delay(long delay){
         try {
@@ -61,7 +66,7 @@ public class TeleOp extends LinearOpMode {
             backLeft = hardwareMap.get(DcMotor.class, "backLeft");
             frontRight = hardwareMap.get(DcMotor.class, "frontRight");
             backRight = hardwareMap.get(DcMotor.class, "backRight");
-            Intake = hardwareMap.get(DcMotor.class, "Intake");
+            Intake = hardwareMap.get(CRServo.class, "Intake");
             Transfer = hardwareMap.get(DcMotor.class, "Transfer");
             leftCatapult = hardwareMap.get(DcMotor.class, "leftCatapult");
             rightCatapult = hardwareMap.get(DcMotor.class, "rightCatapult");
@@ -69,9 +74,11 @@ public class TeleOp extends LinearOpMode {
             lowerKicker = hardwareMap.get(Servo.class, "lowerKicker");
 
             frontLeft.setDirection(DcMotor.Direction.REVERSE);
-            backLeft.setDirection(DcMotor.Direction.REVERSE);
+            backLeft.setDirection(DcMotor.Direction.FORWARD);
             frontRight.setDirection(DcMotor.Direction.FORWARD);
-            backRight.setDirection(DcMotor.Direction.FORWARD);
+            backRight.setDirection(DcMotor.Direction.REVERSE);
+            Transfer.setDirection(DcMotor.Direction.REVERSE);
+            Intake.setDirection(CRServo.Direction.FORWARD);
 
             waitForStart();
 
@@ -92,50 +99,75 @@ public class TeleOp extends LinearOpMode {
                 max = Math.max(max, Math.abs(backLeftPower));
                 max = Math.max(max, Math.abs(backRightPower));
 
-                if (max > 1.0) {
+                if (max > 1.0){
                     frontLeftPower  /= max;
                     frontRightPower /= max;
                     backLeftPower   /= max;
                     backRightPower  /= max;
                 }
 
-                frontLeft.setPower(frontLeftPower);
-                frontRight.setPower(frontRightPower);
-                backLeft.setPower(backLeftPower);
-                backRight.setPower(backRightPower);
+                frontLeft.setPower(frontLeftPower/4);
+                frontRight.setPower(frontRightPower/4);
+                backLeft.setPower(backLeftPower/4);
+                backRight.setPower(backRightPower/4);
 
-                if(gamepad1.a){
+                if(gamepad1.right_bumper){
+                    intakeOn = !intakeOn;
+                    delay(100);
+                }
+                if(gamepad1.left_bumper){
+                    transferOn = !transferOn;
+                    delay(100);
+                }
+
+                if(intakeOn){
                     Intake.setPower(0.8);
-                    Transfer.setPower(0.8);
                 }else{
                     Intake.setPower(0.0);
+                }
+
+                if(transferOn){
+                    Transfer.setPower(0.8);
+                }else{
                     Transfer.setPower(0.0);
                 }
+
+                /*if(gamepad1.x){
+                    pollenClaw.setPosition(1.0);
+                    delay(100);
+                    pollenClaw.setPosition(0.5);
+                    delay(100);
+                    pollenClaw.setPosition(1.0);
+                    delay(100);
+                    pollenClaw.setPosition(0.5);
+                    delay(100);
+                    pollenClaw.setPosition(0.5);
+                }*/
 
                 if(gamepad1.left_trigger >= 0.5){
                     lowerKicker.setPosition(0.0);
                     delay(500);
-                    lowerKicker.setPosition(0.5);
-                    delay(1500);
-                    //double power = pidControl(435, leftCatapult.getCurrentPosition());
-                    leftCatapult.setPower(1.0);
-                    delay(75);
-                    leftCatapult.setPower(-0.5);
-                    delay(200);
-                    leftCatapult.setPower(0.0);
-                }
-
-                if(gamepad1.right_trigger >= 0.5){
-                    upperKicker.setPosition(0.0);
-                    delay(500);
-                    upperKicker.setPosition(0.5);
-                    delay(1500);
+                    lowerKicker.setPosition(-0.5);
+                    delay(1000);
                     //double power = pidControl(435, leftCatapult.getCurrentPosition());
                     rightCatapult.setPower(1.0);
                     delay(75);
                     rightCatapult.setPower(-0.5);
-                    delay(200);
+                    delay(1000);
                     rightCatapult.setPower(0.0);
+                }
+
+                if(gamepad1.right_trigger >= 0.5){
+                    upperKicker.setPosition(0.75);
+                    delay(500);
+                    upperKicker.setPosition(0.25);
+                    delay(1000);
+                    //double power = pidControl(435, leftCatapult.getCurrentPosition());
+                    leftCatapult.setPower(1.0);
+                    delay(75);
+                    leftCatapult.setPower(-0.5);
+                    delay(1000);
+                    leftCatapult.setPower(0.0);
                 }
             }
     }
