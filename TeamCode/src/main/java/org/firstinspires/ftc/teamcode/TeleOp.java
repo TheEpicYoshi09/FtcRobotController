@@ -6,8 +6,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
-
-import org.firstinspires.ftc.robotcontroller.external.samples.SensorDigitalTouch;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
 public class TeleOp extends LinearOpMode {
@@ -34,6 +33,7 @@ public class TeleOp extends LinearOpMode {
 
     private double integralSum = 0;
     private double lastError = 0;
+    private VoltageSensor voltageSensor = null;
 
     private boolean intakeOn = false;
     private boolean transferOn = false;
@@ -46,6 +46,29 @@ public class TeleOp extends LinearOpMode {
             // Restore interrupted status
             Thread.currentThread().interrupt();
         }
+    }
+
+    public void shootBothCatapults(){
+        upperKicker.setPosition(0.6);
+        lowerKicker.setPosition(0.58);
+        delay(400);
+        upperKicker.setPosition(0.25);
+        lowerKicker.setPosition(0.32);
+        delay(800);
+        //double power = pidControl(435, leftCatapult.getCurrentPosition());
+        lowerKicker.setPosition(0.4);
+        leftCatapult.setPower(1.0);
+        delay(70);
+        Count--;
+        leftCatapult.setPower(-0.5);
+        delay(600);
+        leftCatapult.setPower(0.0);
+        rightCatapult.setPower(1.0);
+        delay(40);
+        Count--;
+        rightCatapult.setPower(-0.5);
+        delay(600);
+        rightCatapult.setPower(0.0);
     }
 
     public double pidControl(double reference, double state) {
@@ -86,6 +109,7 @@ public class TeleOp extends LinearOpMode {
             Transfer.setDirection(DcMotor.Direction.REVERSE);
             Intake.setDirection(CRServo.Direction.FORWARD);
             Counter.setMode(DigitalChannel.Mode.INPUT);
+            voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
             waitForStart();
 
@@ -120,10 +144,13 @@ public class TeleOp extends LinearOpMode {
 
                 if(!Counter.getState()){
                     Count++;
+                    delay(300);
                 }
 
-                if(Count == 4){
+                if(Count >= 4){
                     intakeOn = false;
+                }else if(Count < 0){
+                    Count = 0;
                 }else{
                     intakeOn = true;
                 }
@@ -144,22 +171,10 @@ public class TeleOp extends LinearOpMode {
                 }
 
                 if(transferOn){
-                    Transfer.setPower(1.0);
+                    Transfer.setPower(0.7);
                 }else{
                     Transfer.setPower(0.0);
                 }
-
-                /*if(gamepad1.x){
-                    pollenClaw.setPosition(1.0);
-                    delay(100);
-                    pollenClaw.setPosition(0.5);
-                    delay(100);
-                    pollenClaw.setPosition(1.0);
-                    delay(100);
-                    pollenClaw.setPosition(0.5);
-                    delay(100);
-                    pollenClaw.setPosition(0.5);
-                }*/
 
                 if(gamepad1.left_trigger >= 0.5){
                     lowerKicker.setPosition(0.58);
@@ -170,10 +185,10 @@ public class TeleOp extends LinearOpMode {
                     delay(200);
                     //double power = pidControl(435, leftCatapult.getCurrentPosition());
                     rightCatapult.setPower(1.0);
-                    delay(50);
+                    delay(40);
                     Count--;
                     rightCatapult.setPower(-0.5);
-                    delay(1000);
+                    delay(800);
                     rightCatapult.setPower(0.0);
                 }
 
@@ -184,14 +199,36 @@ public class TeleOp extends LinearOpMode {
                     delay(800);
                     //double power = pidControl(435, leftCatapult.getCurrentPosition());
                     leftCatapult.setPower(1.0);
-                    delay(50);
+                    delay(70);
                     Count--;
                     leftCatapult.setPower(-0.5);
-                    delay(1000);
+                    delay(800);
                     leftCatapult.setPower(0.0);
                 }
 
+                if(gamepad1.x){
+                    shootBothCatapults();
+                }
+
+                if(gamepad1.a){
+                    upperKicker.setPosition(0.6);
+                    delay(400);
+                    upperKicker.setPosition(0.25);
+                    delay(800);
+                    leftCatapult.setPower(0.3);
+                    delay(80);
+                    leftCatapult.setPower(0.8);
+                    delay(20);
+                    Count--;
+                    leftCatapult.setPower(-0.5);
+                    delay(500);
+                    leftCatapult.setPower(0.0);
+                }
+
+                double currentVoltage = voltageSensor.getVoltage();
+
                 telemetry.addData("Count = ",Count);
+                telemetry.addData("Battery Efficiency Percentage "," " + currentVoltage * 7.2 + "%f");
                 telemetry.update();
             }
     }
