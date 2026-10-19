@@ -5,6 +5,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+
+import org.firstinspires.ftc.robotcontroller.external.samples.SensorDigitalTouch;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
 public class TeleOp extends LinearOpMode {
@@ -20,6 +23,8 @@ public class TeleOp extends LinearOpMode {
     private Servo lowerKicker = null;
     private ElapsedTime timer = new ElapsedTime();
     private CRServo Intake = null;
+    private DigitalChannel Counter = null;
+    private int Count = 0;
     //private Servo pollenClaw = null;
 
     // Tune these values for your specific robot mechanism
@@ -72,13 +77,15 @@ public class TeleOp extends LinearOpMode {
             rightCatapult = hardwareMap.get(DcMotor.class, "rightCatapult");
             upperKicker = hardwareMap.get(Servo.class, "upperKicker");
             lowerKicker = hardwareMap.get(Servo.class, "lowerKicker");
+            Counter = hardwareMap.get(DigitalChannel.class, "Counter");
 
-            frontLeft.setDirection(DcMotor.Direction.REVERSE);
-            backLeft.setDirection(DcMotor.Direction.FORWARD);
-            frontRight.setDirection(DcMotor.Direction.FORWARD);
-            backRight.setDirection(DcMotor.Direction.REVERSE);
+            frontLeft.setDirection(DcMotor.Direction.FORWARD);
+            backLeft.setDirection(DcMotor.Direction.REVERSE);
+            frontRight.setDirection(DcMotor.Direction.REVERSE);
+            backRight.setDirection(DcMotor.Direction.FORWARD);
             Transfer.setDirection(DcMotor.Direction.REVERSE);
             Intake.setDirection(CRServo.Direction.FORWARD);
+            Counter.setMode(DigitalChannel.Mode.INPUT);
 
             waitForStart();
 
@@ -87,8 +94,8 @@ public class TeleOp extends LinearOpMode {
 
 
                 double axial   = -gamepad1.left_stick_y;
-                double lateral =  gamepad1.left_stick_x;
-                double yaw     =  gamepad1.right_stick_x;
+                double lateral = -gamepad1.right_stick_x;
+                double yaw     =  gamepad1.left_stick_x;
 
                 double frontLeftPower  = axial + lateral + yaw;
                 double frontRightPower = axial - lateral - yaw;
@@ -106,28 +113,38 @@ public class TeleOp extends LinearOpMode {
                     backRightPower  /= max;
                 }
 
-                frontLeft.setPower(frontLeftPower/4);
-                frontRight.setPower(frontRightPower/4);
-                backLeft.setPower(backLeftPower/4);
-                backRight.setPower(backRightPower/4);
+                frontLeft.setPower(frontLeftPower/2);
+                frontRight.setPower(frontRightPower/2);
+                backLeft.setPower(backLeftPower/2);
+                backRight.setPower(backRightPower/2);
+
+                if(!Counter.getState()){
+                    Count++;
+                }
+
+                if(Count == 4){
+                    intakeOn = false;
+                }else{
+                    intakeOn = true;
+                }
 
                 if(gamepad1.right_bumper){
-                    intakeOn = !intakeOn;
-                    delay(100);
+                    Count++;
+                    delay(500);
                 }
                 if(gamepad1.left_bumper){
                     transferOn = !transferOn;
-                    delay(100);
+                    delay(500);
                 }
 
                 if(intakeOn){
-                    Intake.setPower(0.8);
+                    Intake.setPower(1.0);
                 }else{
                     Intake.setPower(0.0);
                 }
 
                 if(transferOn){
-                    Transfer.setPower(0.8);
+                    Transfer.setPower(1.0);
                 }else{
                     Transfer.setPower(0.0);
                 }
@@ -145,30 +162,37 @@ public class TeleOp extends LinearOpMode {
                 }*/
 
                 if(gamepad1.left_trigger >= 0.5){
-                    lowerKicker.setPosition(0.0);
+                    lowerKicker.setPosition(0.58);
+                    delay(400);
+                    lowerKicker.setPosition(0.32);
                     delay(500);
-                    lowerKicker.setPosition(-0.5);
-                    delay(1000);
+                    lowerKicker.setPosition(0.4);
+                    delay(200);
                     //double power = pidControl(435, leftCatapult.getCurrentPosition());
                     rightCatapult.setPower(1.0);
-                    delay(75);
+                    delay(50);
+                    Count--;
                     rightCatapult.setPower(-0.5);
                     delay(1000);
                     rightCatapult.setPower(0.0);
                 }
 
                 if(gamepad1.right_trigger >= 0.5){
-                    upperKicker.setPosition(0.75);
-                    delay(500);
+                    upperKicker.setPosition(0.6);
+                    delay(400);
                     upperKicker.setPosition(0.25);
-                    delay(1000);
+                    delay(800);
                     //double power = pidControl(435, leftCatapult.getCurrentPosition());
                     leftCatapult.setPower(1.0);
-                    delay(75);
+                    delay(50);
+                    Count--;
                     leftCatapult.setPower(-0.5);
                     delay(1000);
                     leftCatapult.setPower(0.0);
                 }
+
+                telemetry.addData("Count = ",Count);
+                telemetry.update();
             }
     }
 
