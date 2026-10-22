@@ -228,7 +228,7 @@ public class TeleOp extends LinearOpMode {
                 double currentVoltage = voltageSensor.getVoltage();
 
                 telemetry.addData("Count = ",Count);
-                telemetry.addData("Battery Efficiency Percentage "," " + currentVoltage * 7.2 + "%f");
+                telemetry.addData("Battery Efficiency Percentage ","%.2f",currentVoltage * 7.2 + "%");
                 telemetry.update();
             }
     }
