@@ -23,6 +23,7 @@ public class TeleOp extends LinearOpMode {
     private ElapsedTime timer = new ElapsedTime();
     private CRServo Intake = null;
     private DigitalChannel Counter = null;
+    private Servo Spindle = null;
     private int Count = 0;
     //private Servo pollenClaw = null;
 
@@ -88,8 +89,6 @@ public class TeleOp extends LinearOpMode {
     @Override
     public void runOpMode(){
 
-        waitForStart();
-
             frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
             backLeft = hardwareMap.get(DcMotor.class, "backLeft");
             frontRight = hardwareMap.get(DcMotor.class, "frontRight");
@@ -101,6 +100,7 @@ public class TeleOp extends LinearOpMode {
             upperKicker = hardwareMap.get(Servo.class, "upperKicker");
             lowerKicker = hardwareMap.get(Servo.class, "lowerKicker");
             Counter = hardwareMap.get(DigitalChannel.class, "Counter");
+            Spindle = hardwareMap.get(Servo.class, "Spindle");
 
             frontLeft.setDirection(DcMotor.Direction.FORWARD);
             backLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -112,6 +112,8 @@ public class TeleOp extends LinearOpMode {
             voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
             waitForStart();
+
+            Spindle.setPosition(-1.0);
 
             while (opModeIsActive()) {
                 double max;

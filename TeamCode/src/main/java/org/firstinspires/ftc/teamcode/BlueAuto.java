@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 @Autonomous
 public class BlueAuto extends LinearOpMode {
@@ -18,9 +19,8 @@ public class BlueAuto extends LinearOpMode {
     private DcMotor rightCatapult = null;
     private Servo upperKicker = null;
     private Servo lowerKicker = null;
-    public void Forward(){
-
-    }
+    private VoltageSensor voltageSensor = null;
+    private Servo Spindle = null;
 
     public void delay(long delay){
         try {
@@ -139,6 +139,9 @@ public class BlueAuto extends LinearOpMode {
         rightCatapult = hardwareMap.get(DcMotor.class, "rightCatapult");
         upperKicker = hardwareMap.get(Servo.class, "upperKicker");
         lowerKicker = hardwareMap.get(Servo.class, "lowerKicker");
+        voltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
+        Spindle = hardwareMap.get(Servo.class, "Spindle");
+
 
         frontLeft.setDirection(DcMotor.Direction.FORWARD);
         backLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -146,10 +149,21 @@ public class BlueAuto extends LinearOpMode {
         backRight.setDirection(DcMotor.Direction.FORWARD);
         Transfer.setDirection(DcMotor.Direction.REVERSE);
 
+        Spindle.setPosition(1.0);
+
         waitForStart();
 
+        Spindle.setPosition(-1.0);
+
         while(opModeIsActive()){
-            startForward(4);
+            double currentVoltage = voltageSensor.getVoltage();
+            int runFor = 0;
+            if(currentVoltage < 13.2){
+                runFor = 6;
+            }else if(currentVoltage >= 13.2){
+                runFor = 4;
+            }
+            startForward(runFor);
             primeSystems();
             delay(400);
             shootBothCatapults();
