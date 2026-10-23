@@ -32,52 +32,99 @@ public class RedAuto extends LinearOpMode {
         }
     }
 
-    public void Forward(long seconds){
+    public void startForward(long tnthSeconds){
+        frontLeft.setPower(0.25);
+        frontRight.setPower(0.25);
+        backLeft.setPower(0.25);
+        backRight.setPower(0.25);
+        delay(tnthSeconds * 100);
+        frontLeft.setPower(0);
+        frontRight.setPower(0);
+        backLeft.setPower(0);
+        backRight.setPower(0);
+    }
+    public void Forward(long tnthSeconds){
         frontLeft.setPower(0.5);
         frontRight.setPower(0.5);
         backLeft.setPower(0.5);
         backRight.setPower(0.5);
-        delay(seconds * 1000);
+        delay(tnthSeconds * 100);
         frontLeft.setPower(0);
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
     }
 
-    public void Backward(long seconds){
+    public void Backward(long tnthSeconds){
         frontLeft.setPower(-0.5);
         frontRight.setPower(-0.5);
         backLeft.setPower(-0.5);
         backRight.setPower(-0.5);
-        delay(seconds * 1000);
+        delay(tnthSeconds * 100);
         frontLeft.setPower(0);
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
     }
 
-    public void strafeLeft(long seconds){
+    public void strafeLeft(long tnthSeconds){
         frontLeft.setPower(-0.5);
         frontRight.setPower(0.5);
         backLeft.setPower(0.5);
         backRight.setPower(-0.5);
-        delay(seconds * 1000);
+        delay(tnthSeconds * 100);
         frontLeft.setPower(0);
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
     }
 
-    public void strafeRight(long seconds){
+    public void strafeRight(long tnthSeconds){
         frontLeft.setPower(0.5);
         frontRight.setPower(-0.5);
         backLeft.setPower(-0.5);
         backRight.setPower(0.5);
-        delay(seconds * 1000);
+        delay(tnthSeconds * 100);
         frontLeft.setPower(0);
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
+    }
+
+    public void shootBothCatapults(){
+        leftCatapult.setPower(1.0);
+        rightCatapult.setPower(1.0);
+        delay(40);
+        rightCatapult.setPower(-0.5);
+        leftCatapult.setPower(-0.5);
+        delay(200);
+        leftCatapult.setPower(0.0);
+        rightCatapult.setPower(0.0);
+        upperKicker.setPosition(0.6);
+        lowerKicker.setPosition(0.58);
+        delay(400);
+        upperKicker.setPosition(0.25);
+        lowerKicker.setPosition(0.32);
+        delay(800);
+        lowerKicker.setPosition(0.4);
+        leftCatapult.setPower(1.0);
+        rightCatapult.setPower(1.0);
+        delay(40);
+        leftCatapult.setPower(-0.5);
+        rightCatapult.setPower(-0.5);
+        delay(600);
+        leftCatapult.setPower(0.0);
+        rightCatapult.setPower(0.0);
+    }
+
+    public void primeSystems(){
+        leftCatapult.setPower(-0.1);
+        rightCatapult.setPower(-0.1);
+        lowerKicker.setPosition(0.4);
+        upperKicker.setPosition(0.25);
+        delay(200);
+        leftCatapult.setPower(0);
+        rightCatapult.setPower(0);
     }
 
     @Override
@@ -102,8 +149,11 @@ public class RedAuto extends LinearOpMode {
         waitForStart();
 
         while(opModeIsActive()){
-            Forward(1);
-            break; //End program
+            startForward(4);
+            primeSystems();
+            delay(400);
+            shootBothCatapults();
+            break; //End Program
         }
     }
 }
